@@ -134,9 +134,9 @@ def calculer_flot_max(graph, source, sink):
     return flot_max
 
 def algo_retour_arriere(matrice_adj, arcs_du_graph):
-    global lowerbound_flot, source, puits, arcs
+    global dernier_flot, source, puits, arcs
 
-    if (lowerbound_flot < flot_max) or (lowerbound_flot == 0):
+    if (dernier_flot < flot_max) or (dernier_flot == 0):
         #print("condition de if rencontree")
         return matrice_adj
     
@@ -158,19 +158,17 @@ def algo_retour_arriere(matrice_adj, arcs_du_graph):
         graph_actuel = tuple[0]
         arcs_actuels = tuple[1]
 
-        flot_actuel = calculer_flot_max(graph_actuel, source, puits)
-        arc_enleves = [x for x in arcs if x not in arcs_actuels]
-        if flot_actuel < lowerbound_flot:
-            lowerbound_flot = flot_actuel
-        if(flot_actuel <= lowerbound_flot) or (lowerbound_flot == 0):
+        dernier_flot = calculer_flot_max(graph_actuel, source, puits)
+        if(dernier_flot < flot_max) or (dernier_flot == 0):
             resultat = algo_retour_arriere(graph_actuel, arcs_actuels)
             if resultat is not None:
-                
-                print("Flot max de ce graphe: %d" %lowerbound_flot)
+                arc_enleves = [x for x in arcs if x not in arcs_actuels]
+                print("Flot max de ce graphe: %d" %dernier_flot)
                 print("Arc enelevees: ", arc_enleves)
                 for line in graph_actuel:
                     print(line)
-                print("\n")
+                print()
+                print()
                 #return resultat
 
 
@@ -180,7 +178,7 @@ def algo_retour_arriere(matrice_adj, arcs_du_graph):
 matrice_adjacence, arcs, nbre_arcs_a_enlever, source, puits = create_matrice_adjacence()
 
 flot_max = calculer_flot_max(matrice_adjacence, source, puits)
-lowerbound_flot = flot_max
+dernier_flot = flot_max
 
 #print("Nombre d'arcs a enlever: ", nbre_arcs_a_enlever)
 print("Flot max de base: %d" %flot_max)
