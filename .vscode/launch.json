@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "args": ["ex2.csv"],
+            "args": ["ex3.csv"],
             "console": "integratedTerminal",
             "justMyCode": true
         }

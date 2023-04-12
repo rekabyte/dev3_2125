@@ -165,9 +165,9 @@ def algo_recherche_flot_minimal(matrice_adjacence, k, source, puits, arcs):
 
             ########## DEBUG ###########:
             debug_enleves = [x for x in arcs_initials if x not in arcs_actuels]
-            print()
+            print("\n")
             print("Pour cette matrice: ")
-            print("Flot max: %d" % flot_actuelle)
+            print("Flot max: %d vs. Meilleur flot actuelle: %d" %(flot_actuelle, meilleur_flot_trouve))
             print("Arcs enleves:", debug_enleves)        
             for line in matrice_a_explorer:
                 print(line)
@@ -175,21 +175,23 @@ def algo_recherche_flot_minimal(matrice_adjacence, k, source, puits, arcs):
 
             if(flot_actuelle < meilleur_flot_trouve):
                 print ("Puisque le flot actuelle est inferieure au flot max: %d" % meilleur_flot_trouve)
-                print ("On explore plus dans cette matrice")
+                
                 meilleur_flot_trouve = flot_actuelle
                 meilleur_matrice_trouve = matrice_a_explorer
                 meilleurs_arcs_enleves = arcs_actuels
                 k_restants -= 1
                 if k_restants <= 0:
+                    print("On ne peut pas explorer plus de %d arcs" %compteur_arcs_restants)
+                    print("On passe au prochain graph")
                     continue
+                print ("On explore plus dans cette matrice")
 
+                #Signifie qu'on va explorer plus dans cette matrice:
                 algo_retour(matrice_a_explorer, arcs_actuels, k_restants)
 
 
     algo_retour(matrice_initial, arcs_initials, compteur_arcs_restants)
     return meilleur_matrice_trouve, meilleur_flot_trouve, meilleurs_arcs_enleves
-
-
 
 
 matrice_adjacence, arcs, nbre_arcs_a_enlever, source, puits = create_matrice_adjacence()
