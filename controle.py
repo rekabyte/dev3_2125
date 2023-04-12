@@ -133,53 +133,71 @@ def calculer_flot_max(graph, source, sink):
     flot_max = g.ford_fulkerson(source, sink)
     return flot_max
 
-def algo_retour_arriere(matrice_adj, arcs_du_graph):
-    global dernier_flot, source, puits, arcs
-
-    if (dernier_flot < flot_max) or (dernier_flot == 0):
-        #print("condition de if rencontree")
-        return matrice_adj
+def algo_recherche_flot_minimal(matrice_adjacence, k, source, puits, arcs):
     
-    prochains_graphs = []
-    for arc in arcs_du_graph :
-        sommet = arc[0]
-        autre_sommet = arc[1]
+    compteur_arcs_restants = k
+    arcs_initials = arcs
+    matrice_initial = copy.deepcopy(matrice_adjacence)
+    meilleur_flot_trouve = calculer_flot_max(matrice_initial, source, puits)
+    meilleur_matrice_trouve = copy.deepcopy(matrice_initial)
+    meilleurs_arcs_enleves = []
 
-        graph_a_explorer = copy.deepcopy(matrice_adj)
+    def algo_retour(matrice_actuelle, arcs_restants: list, k_restants: int):
 
-        #On enleve l'arc du graph (c.a.d de la matrice d'adjacence)
-        graph_a_explorer[sommet][autre_sommet] = 0
-        #On enleve l'arc de la liste des arcs
-        nouveau_arcs = copy.deepcopy(arcs_du_graph)
-        nouveau_arcs.remove((sommet, autre_sommet))
-        prochains_graphs.append((graph_a_explorer, nouveau_arcs))
-        
-    for tuple in prochains_graphs:
-        graph_actuel = tuple[0]
-        arcs_actuels = tuple[1]
+        nonlocal arcs_initials, meilleur_flot_trouve, meilleur_matrice_trouve, meilleurs_arcs_enleves
 
-        dernier_flot = calculer_flot_max(graph_actuel, source, puits)
-        if(dernier_flot < flot_max) or (dernier_flot == 0):
-            resultat = algo_retour_arriere(graph_actuel, arcs_actuels)
-            if resultat is not None:
-                arc_enleves = [x for x in arcs if x not in arcs_actuels]
-                print("Flot max de ce graphe: %d" %dernier_flot)
-                print("Arc enelevees: ", arc_enleves)
-                for line in graph_actuel:
-                    print(line)
-                print()
-                print()
-                #return resultat
+        #On genere les futurs matrices a partir de matrice_actuelle
+        prochains_graphs_a_explorer = []
+        for arc in arcs_restants:
+            sommet, autre_sommet = arc
+            prochain_graph = copy.deepcopy(matrice_actuelle)
+            prochain_graph[sommet][autre_sommet] = 0
+            
+            arcs_prochain_graph = copy.deepcopy(arcs_restants)
+            arcs_prochain_graph.remove((sommet, autre_sommet))
+
+            prochains_graphs_a_explorer.append((prochain_graph, arcs_prochain_graph))
+            prochains_graphs_a_explorer
+
+        #Pour chaque matrice, on verifie si on continue d'explorer, si oui: retourne True
+        for matrice_a_explorer, arcs_actuels in prochains_graphs_a_explorer:           
+            flot_actuelle = calculer_flot_max(matrice_a_explorer, source, puits)
+
+            ########## DEBUG ###########:
+            debug_enleves = [x for x in arcs_initials if x not in arcs_actuels]
+            print()
+            print("Pour cette matrice: ")
+            print("Flot max: %d" % flot_actuelle)
+            print("Arcs enleves:", debug_enleves)        
+            for line in matrice_a_explorer:
+                print(line)
 
 
-    
+            if(flot_actuelle < meilleur_flot_trouve):
+                print ("Puisque le flot actuelle est inferieure au flot max: %d" % meilleur_flot_trouve)
+                print ("On explore plus dans cette matrice")
+                meilleur_flot_trouve = flot_actuelle
+                meilleur_matrice_trouve = matrice_a_explorer
+                meilleurs_arcs_enleves = arcs_actuels
+                k_restants -= 1
+                if k_restants <= 0:
+                    continue
+
+                algo_retour(matrice_a_explorer, arcs_actuels, k_restants)
+
+
+    algo_retour(matrice_initial, arcs_initials, compteur_arcs_restants)
+    return meilleur_matrice_trouve, meilleur_flot_trouve, meilleurs_arcs_enleves
+
+
 
 
 matrice_adjacence, arcs, nbre_arcs_a_enlever, source, puits = create_matrice_adjacence()
 
-flot_max = calculer_flot_max(matrice_adjacence, source, puits)
-dernier_flot = flot_max
+meilleur_matrice, meilleur_flot, meilleur_arcs = algo_recherche_flot_minimal(matrice_adjacence, nbre_arcs_a_enlever, source, puits, arcs)
 
-#print("Nombre d'arcs a enlever: ", nbre_arcs_a_enlever)
-print("Flot max de base: %d" %flot_max)
-algo_retour_arriere(matrice_adjacence, arcs)
+meilleur_arcs = [x for x in arcs if x not in meilleur_arcs]
+
+print(meilleur_arcs, meilleur_flot)
+
+#print(backtrack_reduce_flot_max(matrice_adjacence, 1, source, puits, arcs))
